@@ -22,10 +22,11 @@ pub enum LogStream {
     SuccessfulResponses,
     InformationalResponses,
     UnknownOrUnassigned,
+    Custom(String),
 }
 
 impl LogStream {
-    fn as_str(&self) -> &'static str {
+    fn as_str(&self) -> &str {
         match *self {
             LogStream::ServerResponses => "Server_Responses",
             LogStream::ClientResponses => "Client_Responses",
@@ -33,6 +34,7 @@ impl LogStream {
             LogStream::SuccessfulResponses => "Successful_Responses",
             LogStream::InformationalResponses => "Informational_Responses",
             LogStream::UnknownOrUnassigned => "Unknown_Or_Unassigned",
+            LogStream::Custom(ref s) => s,
         }
     }
 
