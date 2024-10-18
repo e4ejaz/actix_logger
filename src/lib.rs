@@ -23,6 +23,8 @@ macro_rules! log {
         }
     }};
 }
+
+
 #[macro_export]
 macro_rules! log_custom {
     ($level:expr, $log_stream:expr, $($arg:tt)+) => {{
