@@ -23,6 +23,7 @@ macro_rules! log {
         }
     }};
 }
+#[macro_export]
 macro_rules! log_custom {
     ($level:expr, $($arg:tt)+) => {{
         let log_to_cloudwatch = std::env::var("LOG_TO_CLOUDWATCH").unwrap_or_else(|_| "false".to_string()) == "true";
