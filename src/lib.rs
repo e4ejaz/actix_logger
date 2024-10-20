@@ -31,9 +31,9 @@ macro_rules! log_custom {
 
         if log_to_cloudwatch {
             let message_str = format!($($arg)+);
-            let log_stream_str = $log_stream.to_string(); // Convert the log stream to a string if necessary
-            tokio::spawn(async move {
-                let _ = $crate::logs::log($level, &message_str, &log_stream_str, file!(), line!()).await;
+            let log_stream = $crate::logs::LogStream::from_string($log_stream);
+             tokio::spawn(async move {
+                let _ = $crate::logs::log($level, &message_str, log_stream, file!(), line!()).await;
             });
         } else {
             match $level {

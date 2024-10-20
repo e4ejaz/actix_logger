@@ -38,6 +38,17 @@ impl LogStream {
         }
     }
 
+    pub fn from_string(stream_name:String)->Self{
+        match stream_name.as_str() {
+            "Server_Responses" => LogStream::ServerResponses,
+            "Client_Responses" => LogStream::ClientResponses,
+            "Redirection_Responses" => LogStream::RedirectionResponses,
+            "Successful_Responses" => LogStream::SuccessfulResponses,
+            "Informational_Responses" => LogStream::InformationalResponses,
+            "Unknown_Or_Unassigned" => LogStream::UnknownOrUnassigned,
+            _ => LogStream::Custom(stream_name),
+        }
+    }
     fn with_date(&self) -> String {
         let current_date = Utc::now().format("%Y-%m-%d").to_string();
         format!("{}-{}", current_date, self.as_str())
