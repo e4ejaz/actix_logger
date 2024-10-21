@@ -22,10 +22,11 @@ pub enum LogStream {
     SuccessfulResponses,
     InformationalResponses,
     UnknownOrUnassigned,
+    Custom(String),
 }
 
 impl LogStream {
-    fn as_str(&self) -> &'static str {
+    fn as_str(&self) -> &str {
         match *self {
             LogStream::ServerResponses => "Server_Responses",
             LogStream::ClientResponses => "Client_Responses",
@@ -33,9 +34,21 @@ impl LogStream {
             LogStream::SuccessfulResponses => "Successful_Responses",
             LogStream::InformationalResponses => "Informational_Responses",
             LogStream::UnknownOrUnassigned => "Unknown_Or_Unassigned",
+            LogStream::Custom(ref s) => s,
         }
     }
 
+    pub fn from_string(stream_name:String)->Self{
+        match stream_name.as_str() {
+            "Server_Responses" => LogStream::ServerResponses,
+            "Client_Responses" => LogStream::ClientResponses,
+            "Redirection_Responses" => LogStream::RedirectionResponses,
+            "Successful_Responses" => LogStream::SuccessfulResponses,
+            "Informational_Responses" => LogStream::InformationalResponses,
+            "Unknown_Or_Unassigned" => LogStream::UnknownOrUnassigned,
+            _ => LogStream::Custom(stream_name),
+        }
+    }
     fn with_date(&self) -> String {
         let current_date = Utc::now().format("%Y-%m-%d").to_string();
         format!("{}-{}", current_date, self.as_str())
@@ -110,7 +123,13 @@ async fn handle_logging_operation(client: CloudWatchLogsClient, log_group_name: 
     Ok(())
 }
 
-pub async fn log(level: Level, message: &str, log_stream: LogStream, file: &str, line: u32) -> Result<(), Error> {
+pub async fn log(
+    level: Level,
+    message: &str,
+    log_stream: LogStream,
+    file: &str,
+    line: u32
+) -> Result<(), Error> {
     let log_group_name = match env::var("AWS_LOG_GROUP") {
         Ok(name) => name,
         Err(_) => return Err(Error::EnvVarMissing("AWS_LOG_GROUP".to_string())),
@@ -133,21 +152,56 @@ pub async fn log(level: Level, message: &str, log_stream: LogStream, file: &str,
     let log_stream_name_clone = log_stream_name.clone();
 
     tokio::spawn(async move {
-        if ensure_log_stream_exists(&client_clone, &log_group_name_clone, &log_stream_name_clone).await.is_ok() {
+        if ensure_log_stream_exists(&client_clone, &log_group_name_clone, &log_stream_name_clone)
+            .await
+            .is_ok()
+        {
             let _ = handle_logging_operation(client_clone, log_group_name_clone, log_stream_name_clone, message_str).await;
         }
     });
 
+    // Custom stream check
     match level {
-        Level::Error => error!("{}", message),
-        Level::Warn => warn!("{}", message),
-        Level::Info => info!("{}", message),
-        Level::Debug => debug!("{}", message),
-        Level::Trace => trace!("{}", message),
+        Level::Error => {
+            if let LogStream::Custom(ref stream_name) = log_stream {
+                error!("Stream [{}] - {}", stream_name, message);
+            } else {
+                error!("{}", message);
+            }
+        },
+        Level::Warn => {
+            if let LogStream::Custom(ref stream_name) = log_stream {
+                warn!("Stream [{}] - {}", stream_name, message);
+            } else {
+                warn!("{}", message);
+            }
+        },
+        Level::Info => {
+            if let LogStream::Custom(ref stream_name) = log_stream {
+                info!("Stream [{}] - {}", stream_name, message);
+            } else {
+                info!("{}", message);
+            }
+        },
+        Level::Debug => {
+            if let LogStream::Custom(ref stream_name) = log_stream {
+                debug!("Stream [{}] - {}", stream_name, message);
+            } else {
+                debug!("{}", message);
+            }
+        },
+        Level::Trace => {
+            if let LogStream::Custom(ref stream_name) = log_stream {
+                trace!("Stream [{}] - {}", stream_name, message);
+            } else {
+                trace!("{}", message);
+            }
+        },
     }
 
     Ok(())
 }
+
 
 async fn ensure_log_group_exists(client: &CloudWatchLogsClient, log_group_name: &str) -> Result<(), Box<dyn error::Error>> {
     let resp = client

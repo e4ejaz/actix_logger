@@ -18,3 +18,8 @@ log!(Level::Info, "This is an info message");
 log!(Level::Error, "This is an error message");
 log!(Level::Debug, "Debugging information");
 ```
+To log in a custom stream (other than info, error and debug) you can use log_custom macro
+```
+log_custom!(Level::Info,"Custom Stream Name", "This is the message and variable {}",variable);
+
+```
