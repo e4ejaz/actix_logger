@@ -36,12 +36,13 @@ macro_rules! log_custom {
                 let _ = $crate::logs::log($level, &message_str, stream, file!(), line!()).await;
             });
         } else {
+
             match $level {
-                log::Level::Error => println!("ERROR: {}", format!($($arg)+)),
-                log::Level::Warn  => println!("WARN: {}", format!($($arg)+)),
-                log::Level::Info  => println!("INFO: {}", format!($($arg)+)),
-                log::Level::Debug => println!("DEBUG: {}", format!($($arg)+)),
-                log::Level::Trace => println!("TRACE: {}", format!($($arg)+)),
+                log::Level::Error => println!("{} ::ERROR: {}",$log_stream, format!($($arg)+)),
+                log::Level::Warn  => println!("{} ::WARN: {}",$log_stream, format!($($arg)+)),
+                log::Level::Info  => println!("{} ::INFO: {}",$log_stream, format!($($arg)+)),
+                log::Level::Debug => println!("{} ::DEBUG: {}",$log_stream, format!($($arg)+)),
+                log::Level::Trace => println!("{} ::TRACE: {}",$log_stream, format!($($arg)+)),
             }
         }
     }};
