@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aws-config = "1.5.14"
+aws-config =  { version = "1.5.14", features = ["behavior-version-latest"] }
 aws-sdk-cloudwatchlogs = { version = "1.65.0", features = ["behavior-version-latest"] }
 chrono = "0.4.39"
 env_logger = "0.11.6"
